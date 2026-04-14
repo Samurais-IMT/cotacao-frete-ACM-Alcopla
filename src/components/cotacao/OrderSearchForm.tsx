@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Package, Search, Loader2, FileSearch } from "lucide-react";
+import { Search, Loader2, FileSearch } from "lucide-react";
+import logoACM from "@/assets/LOGO_ACM.png";
 
 interface OrderSearchFormProps {
   onSubmitNovaCotacao: (numeroPedido: string) => void;
@@ -26,12 +27,10 @@ const OrderSearchForm = ({ onSubmitNovaCotacao, onSubmitBuscarCotacao, isLoading
 
   return (
     <div className="w-full max-w-lg mx-auto space-y-8">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center">
-          <Package className="h-7 w-7 text-primary" />
-        </div>
+      <div className="w-full flex flex-col items-center text-center gap-3">
+        <img src={logoACM} alt="Alcopla" className="h-20 object-contain" />
         <h1 className="text-2xl font-semibold text-foreground">Cotação de Frete</h1>
-        <p className="text-muted-foreground text-sm text-center">
+        <p className="text-muted-foreground text-sm">
           Inicie uma nova cotação ou consulte uma existente.
         </p>
       </div>
