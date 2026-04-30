@@ -4,14 +4,16 @@ import { consultarAcompanhamento, selecionarVencedor } from "@/services/cotacaoS
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Clock, CheckCircle2, AlertTriangle, Users, RefreshCw, Copy, Check, MapPin, Trophy, Loader2 } from "lucide-react";
+import {
+  ArrowLeft, Clock, CheckCircle2, AlertTriangle, Users,
+  RefreshCw, Copy, Check, MapPin, Trophy, Loader2
+} from "lucide-react";
 
 interface AcompanhamentoViewProps {
   data: AcompanhamentoResponse;
   onBack: () => void;
   onDataUpdate: (data: AcompanhamentoResponse) => void;
   dadosPedido?: { itens: ItemCotacao[]; pesoTotal: number; totalVolumes: number } | null;
-  isCriacao?: boolean;
 }
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
@@ -38,7 +40,6 @@ function useCountdown(segundosRestantes: number | undefined, encerrada: boolean)
   }, [encerrada, secondsLeft > 0]);
 
   if (encerrada || secondsLeft <= 0) return "Prazo encerrado";
-
   const h = Math.floor(secondsLeft / 3600);
   const m = Math.floor((secondsLeft % 3600) / 60);
   const s = secondsLeft % 60;
@@ -52,7 +53,7 @@ function parseValor(valor: string | null | undefined): number {
 
 const POLLING_INTERVAL = 10_000;
 
-const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao }: AcompanhamentoViewProps) => {
+const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: AcompanhamentoViewProps) => {
   const timeLeft = useCountdown(data.segundosRestantes, data.encerrada);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -60,6 +61,9 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
   const [confirmando, setConfirmando] = useState(false);
   const [erroVencedor, setErroVencedor] = useState("");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const shouldStop = data.encerrada || data.todosResponderam || data.vencedorDefinido;
+  const podeSelecionar = (data.encerrada || data.todosResponderam) && !data.vencedorDefinido;
 
   const handleCopy = async () => {
     try {
@@ -69,31 +73,35 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
     } catch { /* ignore */ }
   };
 
-  const shouldStop = data.encerrada || data.todosResponderam || data.vencedorDefinido;
-
-  const podeSelecionar = (data.encerrada || data.todosResponderam) && !data.vencedorDefinido;
-
   const sortedFornecedores = [...data.fornecedores].sort((a, b) => {
-    // Vencedor sempre no topo
     if (a.vencedor && !b.vencedor) return -1;
     if (!a.vencedor && b.vencedor) return 1;
-    // Respondidos antes de aguardando
     const aRes = a.status === "respondido" ? 0 : 1;
     const bRes = b.status === "respondido" ? 0 : 1;
     if (aRes !== bRes) return aRes - bRes;
-    // Entre respondidos, menor valor primeiro
     if (aRes === 0) return parseValor(a.valor) - parseValor(b.valor);
     return 0;
   });
 
   const formattedDeadline = (() => {
     if (!data.deadlineAt) return "—";
-    const deadlineDate = new Date(data.deadlineAt);
-    return deadlineDate.toLocaleString("pt-BR", {
+    return new Date(data.deadlineAt).toLocaleString("pt-BR", {
       day: "2-digit", month: "2-digit", year: "numeric",
       hour: "2-digit", minute: "2-digit",
       timeZone: "America/Sao_Paulo",
     });
+  })();
+
+  const enderecoFormatado = (() => {
+    const e = data.enderecoDestino;
+    if (!e) return null;
+    return [
+      e.logradouro + (e.numero ? `, ${e.numero}` : ""),
+      e.complemento,
+      e.bairro,
+      e.cidade + (e.estado ? `/${e.estado}` : ""),
+      e.cep ? `CEP: ${e.cep}` : "",
+    ].filter(Boolean).join(" — ");
   })();
 
   const refresh = useCallback(async () => {
@@ -101,11 +109,8 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
     try {
       const updated = await consultarAcompanhamento(data.cotacaoId);
       onDataUpdate(updated);
-    } catch {
-      // ignora erros silenciosamente
-    } finally {
-      setIsRefreshing(false);
-    }
+    } catch { /* ignora */ }
+    finally { setIsRefreshing(false); }
   }, [data.cotacaoId, onDataUpdate]);
 
   useEffect(() => {
@@ -135,18 +140,6 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
     }
   };
 
-  const enderecoFormatado = (() => {
-    const e = data.enderecoDestino;
-    if (!e) return null;
-    return [
-      e.logradouro + (e.numero ? `, ${e.numero}` : ""),
-      e.complemento,
-      e.bairro,
-      e.cidade + (e.estado ? `/${e.estado}` : ""),
-      e.cep ? `CEP: ${e.cep}` : "",
-    ].filter(Boolean).join(" — ");
-  })();
-
   return (
     <div className={`space-y-6 transition-opacity duration-300 ${isRefreshing ? "opacity-80" : "opacity-100"}`}>
 
@@ -156,9 +149,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
-          <h2 className="text-xl font-semibold text-foreground">
-            {isCriacao ? "Criação de cotação" : "Acompanhamento da cotação"}
-          </h2>
+          <h2 className="text-xl font-semibold text-foreground">Acompanhamento da cotação</h2>
           <p className="text-sm text-muted-foreground flex items-center gap-1.5">
             Pedido #{data.numeroPedido} — {data.cotacaoId}
             <button onClick={handleCopy} className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-muted transition-colors" title="Copiar ID">
@@ -173,24 +164,22 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
         )}
       </div>
 
-      {/* Status */}
+      {/* Card de status */}
       <div className="bg-card border border-border rounded-lg p-4 space-y-4">
         <p className="text-sm font-medium text-foreground">{data.mensagemStatus}</p>
 
         {data.vencedorDefinido && (
           <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400">
             <Trophy className="h-4 w-4" />
-            Vencedor definido para esta cotação.
+            Vencedor já definido para esta cotação.
           </div>
         )}
-
         {!data.vencedorDefinido && data.todosResponderam && (
           <div className="flex items-center gap-2 text-sm text-accent">
             <CheckCircle2 className="h-4 w-4" />
-            Todos os orçamentos já foram enviados.
+            Todos os orçamentos já foram recebidos.
           </div>
         )}
-
         {data.encerrada && !data.vencedorDefinido && (
           <div className="flex items-center gap-2 text-sm text-destructive">
             <AlertTriangle className="h-4 w-4" />
@@ -222,7 +211,6 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
           </div>
         </div>
 
-        {/* Endereço de destino */}
         {enderecoFormatado && (
           <div className="flex items-start gap-2 text-sm text-muted-foreground pt-1 border-t border-border">
             <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
@@ -231,7 +219,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
         )}
       </div>
 
-      {/* Fornecedores */}
+      {/* Tabela de fornecedores — sempre a mesma, valores aparecem conforme respondem */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground">Fornecedores ({data.totalFornecedores})</h3>
@@ -245,50 +233,9 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
             <Clock className="h-4 w-4 animate-pulse" />
             Aguardando dados dos fornecedores...
           </div>
-        ) : isCriacao ? (
-          /* Tela de criação: só nome + status */
-          <>
-            <div className="hidden md:block border border-border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Telefone</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedFornecedores.map((f) => (
-                    <TableRow key={f.nome + f.telefone}>
-                      <TableCell className="font-medium">{f.nome}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{f.telefone}</TableCell>
-                      <TableCell>
-                        <Badge variant={statusConfig[f.status]?.variant ?? "secondary"}>
-                          {statusConfig[f.status]?.label ?? f.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="md:hidden space-y-3">
-              {sortedFornecedores.map((f) => (
-                <div key={f.nome + f.telefone} className="bg-card border border-border rounded-lg p-4 space-y-2">
-                  <div className="flex justify-between items-start">
-                    <span className="font-medium text-foreground text-sm">{f.nome}</span>
-                    <Badge variant={statusConfig[f.status]?.variant ?? "secondary"}>
-                      {statusConfig[f.status]?.label ?? f.status}
-                    </Badge>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{f.telefone}</span>
-                </div>
-              ))}
-            </div>
-          </>
         ) : (
-          /* Tela de acompanhamento: tabela completa + seleção de vencedor */
           <>
+            {/* Desktop */}
             <div className="hidden md:block border border-border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
@@ -322,10 +269,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
                               name="vencedor"
                               value={f.telefone}
                               checked={telefoneVencedor === f.telefone}
-                              onChange={() => {
-                                setTelefoneVencedor(f.telefone);
-                                setErroVencedor("");
-                              }}
+                              onChange={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
                               className="cursor-pointer accent-primary"
                             />
                           )}
@@ -392,10 +336,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
                           name="vencedor"
                           value={f.telefone}
                           checked={telefoneVencedor === f.telefone}
-                          onChange={() => {
-                            setTelefoneVencedor(f.telefone);
-                            setErroVencedor("");
-                          }}
+                          onChange={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
                           className="cursor-pointer accent-primary"
                         />
                       )}
@@ -435,25 +376,17 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
 
             {/* Botão confirmar vencedor */}
             {podeSelecionar && (
-              <div className="space-y-2">
-                {erroVencedor && (
-                  <p className="text-sm text-destructive">{erroVencedor}</p>
-                )}
+              <div className="space-y-2 pt-1">
+                {erroVencedor && <p className="text-sm text-destructive">{erroVencedor}</p>}
                 <Button
                   onClick={handleConfirmarVencedor}
                   disabled={!telefoneVencedor || confirmando}
                   className="w-full sm:w-auto"
                 >
                   {confirmando ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Confirmando...
-                    </>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Confirmando...</>
                   ) : (
-                    <>
-                      <Trophy className="mr-2 h-4 w-4" />
-                      Confirmar vencedor
-                    </>
+                    <><Trophy className="mr-2 h-4 w-4" />Confirmar vencedor</>
                   )}
                 </Button>
               </div>
@@ -462,7 +395,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido, isCriacao
         )}
       </div>
 
-      {/* Itens do pedido (só na criação) */}
+      {/* Produtos do pedido — só aparece quando vem da criação */}
       {dadosPedido && dadosPedido.itens.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-foreground">
