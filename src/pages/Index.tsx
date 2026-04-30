@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CotacaoErroResponse, AcompanhamentoResponse, ItemCotacao } from "@/types/cotacao";
+import { CotacaoErroResponse, AcompanhamentoResponse, ItemCotacao, EnderecoDestino } from "@/types/cotacao";
 import { buscarCotacao, consultarAcompanhamento } from "@/services/cotacaoService";
 import OrderSearchForm from "@/components/cotacao/OrderSearchForm";
 import ErrorMessage from "@/components/cotacao/ErrorMessage";
@@ -19,13 +19,13 @@ const Index = () => {
   const [dadosPedido, setDadosPedido] = useState<DadosPedido | null>(null);
   const [error, setError] = useState<CotacaoErroResponse | string | null>(null);
 
-  const handleNovaCotacao = async (numeroPedido: string) => {
+  const handleNovaCotacao = async (numeroPedido: string, enderecoDestino: EnderecoDestino) => {
     setIsLoading(true);
     setLoadingType("nova");
     setError(null);
 
     try {
-      const response = await buscarCotacao(numeroPedido);
+      const response = await buscarCotacao(numeroPedido, enderecoDestino);
 
       if (response.sucesso === true) {
         const deadline = new Date(response.deadlineAt);
@@ -52,17 +52,26 @@ const Index = () => {
           totalFornecedores: response.totalFornecedores ?? 1,
           totalRespondidos: 0,
           todosResponderam: false,
+          vencedorDefinido: false,
           mensagemStatus: "Aguardando retorno dos fornecedores.",
-          fornecedores: response.fornecedor ? [{
-            nome: response.fornecedor,
-            telefone: response.fornecedor_telefone || "—",
-            status: "aguardando",
-            valor: null,
-            prazo: null,
-            prazoDias: null,
-            respondidoEm: null,
-          }] : [],
+          enderecoDestino,
+          fornecedores: response.fornecedor
+            ? [
+                {
+                  nome: response.fornecedor,
+                  telefone: response.fornecedor_telefone || "—",
+                  status: "aguardando",
+                  valor: null,
+                  prazo: null,
+                  prazoDias: null,
+                  respondidoEm: null,
+                  vencedor: false,
+                  statusFinal: null,
+                },
+              ]
+            : [],
         };
+
         setAcompanhamento(acomp);
         setDadosPedido({
           itens: response.itens,
@@ -119,7 +128,13 @@ const Index = () => {
       <div className="min-h-screen bg-background/85 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 py-12 sm:py-16">
           {acompanhamento ? (
-            <AcompanhamentoView data={acompanhamento} onBack={handleBack} onDataUpdate={setAcompanhamento} dadosPedido={dadosPedido} isCriacao={!!dadosPedido} />
+            <AcompanhamentoView
+              data={acompanhamento}
+              onBack={handleBack}
+              onDataUpdate={setAcompanhamento}
+              dadosPedido={dadosPedido}
+              isCriacao={!!dadosPedido}
+            />
           ) : (
             <div className="space-y-6">
               <OrderSearchForm

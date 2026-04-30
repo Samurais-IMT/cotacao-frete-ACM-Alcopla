@@ -15,6 +15,16 @@ export interface CampoFaltante {
   campos: string[];
 }
 
+export interface EnderecoDestino {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+}
+
 export interface CotacaoSucessoResponse {
   sucesso: true;
   mensagem: string;
@@ -46,6 +56,8 @@ export interface Fornecedor {
   prazo: string | null;
   prazoDias: number | null;
   respondidoEm: string | null;
+  vencedor: boolean;
+  statusFinal: "vencedor" | "perdedor" | null;
 }
 
 export interface AcompanhamentoResponse {
@@ -60,6 +72,18 @@ export interface AcompanhamentoResponse {
   totalFornecedores: number;
   totalRespondidos: number;
   todosResponderam: boolean;
+  vencedorDefinido: boolean;
   mensagemStatus: string;
+  enderecoDestino?: EnderecoDestino;
   fornecedores: Fornecedor[];
+}
+
+export interface SelecionarVencedorRequest {
+  cotacaoId: string;
+  fornecedorTelefone: string;
+}
+
+export interface SelecionarVencedorResponse {
+  sucesso: boolean;
+  mensagem: string;
 }
