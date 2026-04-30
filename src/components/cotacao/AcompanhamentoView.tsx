@@ -108,7 +108,14 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
     setIsRefreshing(true);
     try {
       const updated = await consultarAcompanhamento(data.cotacaoId);
-      onDataUpdate(updated);
+      if (updated.deadlineAt) {
+        const deadline = new Date(updated.deadlineAt);
+        const agora = new Date();
+        const segundosRestantes = Math.max(0, Math.floor((deadline.getTime() - agora.getTime()) / 1000));
+        onDataUpdate({ ...updated, segundosRestantes });
+      } else {
+        onDataUpdate(updated);
+      }
     } catch { /* ignora */ }
     finally { setIsRefreshing(false); }
   }, [data.cotacaoId, onDataUpdate]);
