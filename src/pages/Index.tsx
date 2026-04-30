@@ -12,12 +12,26 @@ interface DadosPedido {
   totalVolumes: number;
 }
 
+// Sempre calcula segundosRestantes localmente a partir do deadlineAt
+// para evitar problemas de fuso horário vindo do servidor
+function corrigirSegundos(data: AcompanhamentoResponse): AcompanhamentoResponse {
+  if (!data.deadlineAt) return data;
+  const deadline = new Date(data.deadlineAt);
+  const agora = new Date();
+  const segundosRestantes = Math.max(0, Math.floor((deadline.getTime() - agora.getTime()) / 1000));
+  return { ...data, segundosRestantes };
+}
+
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<"nova" | "buscar" | null>(null);
   const [acompanhamento, setAcompanhamento] = useState<AcompanhamentoResponse | null>(null);
   const [dadosPedido, setDadosPedido] = useState<DadosPedido | null>(null);
   const [error, setError] = useState<CotacaoErroResponse | string | null>(null);
+
+  const handleDataUpdate = (data: AcompanhamentoResponse) => {
+    setAcompanhamento(corrigirSegundos(data));
+  };
 
   const handleNovaCotacao = async (numeroPedido: string, enderecoDestino: EnderecoDestino) => {
     setIsLoading(true);
@@ -97,7 +111,7 @@ const Index = () => {
     try {
       const response = await consultarAcompanhamento(cotacaoId);
       if (response.sucesso) {
-        setAcompanhamento(response);
+        setAcompanhamento(corrigirSegundos(response));
       } else {
         setError("Cotação não encontrada. Verifique o ID e tente novamente.");
       }
@@ -131,9 +145,8 @@ const Index = () => {
             <AcompanhamentoView
               data={acompanhamento}
               onBack={handleBack}
-              onDataUpdate={setAcompanhamento}
+              onDataUpdate={handleDataUpdate}
               dadosPedido={dadosPedido}
-              isCriacao={!!dadosPedido}
             />
           ) : (
             <div className="space-y-6">
