@@ -5,9 +5,9 @@ import {
   SelecionarVencedorResponse,
 } from "@/types/cotacao";
 
-const ENDPOINT = "https://n8n.unoerp.com.br/webhook/cotacao_em_tela";
-const ACOMPANHAMENTO_ENDPOINT = "https://n8n.unoerp.com.br/webhook/consultar-cotacao-front";
-const SELECIONAR_VENCEDOR_ENDPOINT = "https://n8n.unoerp.com.br/webhook/selecionar-vencedor";
+const ENDPOINT = "https://n8n.unoerp.com.br/webhook-test/cotacao_em_tela";
+const ACOMPANHAMENTO_ENDPOINT = "https://n8n.unoerp.com.br/webhook-test/consultar-cotacao-front";
+const SELECIONAR_VENCEDOR_ENDPOINT = "https://n8n.unoerp.com.br/webhook-test/selecionar-vencedor";
 
 export async function buscarCotacao(
   numeroPedido: string,
