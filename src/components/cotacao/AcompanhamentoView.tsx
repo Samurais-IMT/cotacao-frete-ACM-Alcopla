@@ -62,7 +62,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
   const [erroVencedor, setErroVencedor] = useState("");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const shouldStop = data.encerrada || data.todosResponderam || data.vencedorDefinido;
+  const shouldStop = data.encerrada || data.todosResponderam || data.vencedorDefinido || !!telefoneVencedor;
   const podeSelecionar = (data.encerrada || data.todosResponderam) && !data.vencedorDefinido;
 
   const handleCopy = async () => {
