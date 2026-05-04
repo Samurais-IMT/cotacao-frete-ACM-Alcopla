@@ -58,11 +58,12 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [telefoneVencedor, setTelefoneVencedor] = useState<string | null>(null);
+  const telefoneVencedorRef = useRef<string | null>(null);
   const [confirmando, setConfirmando] = useState(false);
   const [erroVencedor, setErroVencedor] = useState("");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const shouldStop = data.encerrada || data.todosResponderam || data.vencedorDefinido || !!telefoneVencedor;
+  const shouldStop = data.encerrada || data.todosResponderam || data.vencedorDefinido || !!telefoneVencedorRef.current;
   const podeSelecionar = (data.encerrada || data.todosResponderam) && !data.vencedorDefinido;
 
   const handleCopy = async () => {
@@ -266,7 +267,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
                               name="vencedor"
                               value={f.telefone}
                               checked={telefoneVencedor === f.telefone}
-                              onChange={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
+                              onChange={() => { setTelefoneVencedor(f.telefone); telefoneVencedorRef.current = f.telefone; setErroVencedor(""); }}
                               className="cursor-pointer accent-primary"
                             />
                           )}
@@ -333,7 +334,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
                           name="vencedor"
                           value={f.telefone}
                           checked={telefoneVencedor === f.telefone}
-                          onChange={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
+                          onChange={() => { setTelefoneVencedor(f.telefone); telefoneVencedorRef.current = f.telefone; setErroVencedor(""); }}
                           className="cursor-pointer accent-primary"
                         />
                       )}
