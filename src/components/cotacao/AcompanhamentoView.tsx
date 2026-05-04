@@ -22,6 +22,30 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   encerrado:  { label: "Encerrado",  variant: "destructive" },
 };
 
+function CountdownDisplay({ segundosRestantes, encerrada }: { segundosRestantes: number | undefined; encerrada: boolean }) {
+  const [secondsLeft, setSecondsLeft] = useState<number>(Math.max(0, segundosRestantes ?? 0));
+
+  useEffect(() => {
+    if (segundosRestantes != null) {
+      setSecondsLeft(Math.max(0, Math.floor(segundosRestantes)));
+    }
+  }, [segundosRestantes]);
+
+  useEffect(() => {
+    if (encerrada || secondsLeft <= 0) return;
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [encerrada, secondsLeft > 0]);
+
+  if (encerrada || secondsLeft <= 0) return <span className="text-sm font-mono font-semibold text-foreground">Prazo encerrado</span>;
+  const h = Math.floor(secondsLeft / 3600);
+  const m = Math.floor((secondsLeft % 3600) / 60);
+  const s = secondsLeft % 60;
+  return <span className="text-sm font-mono font-semibold text-foreground">{`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`}</span>;
+}
+
 function useCountdown(segundosRestantes: number | undefined, encerrada: boolean) {
   const [secondsLeft, setSecondsLeft] = useState<number>(Math.max(0, segundosRestantes ?? 0));
 
@@ -43,7 +67,7 @@ function useCountdown(segundosRestantes: number | undefined, encerrada: boolean)
   const h = Math.floor(secondsLeft / 3600);
   const m = Math.floor((secondsLeft % 3600) / 60);
   const s = secondsLeft % 60;
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  return \`\${h.toString().padStart(2, "0")}:\${m.toString().padStart(2, "0")}:\${s.toString().padStart(2, "0")}\`;
 }
 
 function parseValor(valor: string | null | undefined): number {
@@ -58,12 +82,11 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [telefoneVencedor, setTelefoneVencedor] = useState<string | null>(null);
-  const telefoneVencedorRef = useRef<string | null>(null);
   const [confirmando, setConfirmando] = useState(false);
   const [erroVencedor, setErroVencedor] = useState("");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const shouldStop = data.encerrada || data.todosResponderam || data.vencedorDefinido || !!telefoneVencedorRef.current;
+  const shouldStop = data.encerrada || data.todosResponderam || data.vencedorDefinido || !!telefoneVencedor;
   const podeSelecionar = (data.encerrada || data.todosResponderam) && !data.vencedorDefinido;
 
   const handleCopy = async () => {
@@ -190,7 +213,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
             <span className="text-xs text-muted-foreground block mb-1">Countdown</span>
             <div className="flex items-center gap-1.5">
               <Clock className="h-4 w-4 text-primary" />
-              <span className="text-sm font-mono font-semibold text-foreground">{timeLeft}</span>
+              <CountdownDisplay segundosRestantes={data.segundosRestantes} encerrada={data.encerrada} />
             </div>
           </div>
           <div className="bg-muted/50 rounded-lg p-3">
@@ -267,7 +290,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
                               name="vencedor"
                               value={f.telefone}
                               checked={telefoneVencedor === f.telefone}
-                              onChange={() => { setTelefoneVencedor(f.telefone); telefoneVencedorRef.current = f.telefone; setErroVencedor(""); }}
+                              onChange={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
                               className="cursor-pointer accent-primary"
                             />
                           )}
@@ -334,7 +357,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
                           name="vencedor"
                           value={f.telefone}
                           checked={telefoneVencedor === f.telefone}
-                          onChange={() => { setTelefoneVencedor(f.telefone); telefoneVencedorRef.current = f.telefone; setErroVencedor(""); }}
+                          onChange={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
                           className="cursor-pointer accent-primary"
                         />
                       )}
