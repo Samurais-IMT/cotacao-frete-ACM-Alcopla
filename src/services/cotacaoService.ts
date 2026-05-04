@@ -1,7 +1,6 @@
 import {
   CotacaoResponse,
   AcompanhamentoResponse,
-  EnderecoDestino,
   SelecionarVencedorResponse,
 } from "@/types/cotacao";
 
@@ -10,13 +9,12 @@ const ACOMPANHAMENTO_ENDPOINT = "https://n8n.unoerp.com.br/webhook-test/consulta
 const SELECIONAR_VENCEDOR_ENDPOINT = "https://n8n.unoerp.com.br/webhook-test/selecionar-vencedor";
 
 export async function buscarCotacao(
-  numeroPedido: string,
-  enderecoDestino: EnderecoDestino
+  numeroPedido: string
 ): Promise<CotacaoResponse> {
   const response = await fetch(ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ numeroPedido, enderecoDestino }),
+    body: JSON.stringify({ numeroPedido }),
   });
 
   if (!response.ok) {

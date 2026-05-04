@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CotacaoErroResponse, AcompanhamentoResponse, ItemCotacao, EnderecoDestino } from "@/types/cotacao";
+import { CotacaoErroResponse, AcompanhamentoResponse, ItemCotacao } from "@/types/cotacao";
 import { buscarCotacao, consultarAcompanhamento } from "@/services/cotacaoService";
 import OrderSearchForm from "@/components/cotacao/OrderSearchForm";
 import ErrorMessage from "@/components/cotacao/ErrorMessage";
@@ -12,8 +12,6 @@ interface DadosPedido {
   totalVolumes: number;
 }
 
-// Sempre calcula segundosRestantes localmente a partir do deadlineAt
-// para evitar problemas de fuso horário vindo do servidor
 function corrigirSegundos(data: AcompanhamentoResponse): AcompanhamentoResponse {
   if (!data.deadlineAt) return data;
   const deadline = new Date(data.deadlineAt);
@@ -33,13 +31,13 @@ const Index = () => {
     setAcompanhamento(corrigirSegundos(data));
   };
 
-  const handleNovaCotacao = async (numeroPedido: string, enderecoDestino: EnderecoDestino) => {
+  const handleNovaCotacao = async (numeroPedido: string) => {
     setIsLoading(true);
     setLoadingType("nova");
     setError(null);
 
     try {
-      const response = await buscarCotacao(numeroPedido, enderecoDestino);
+      const response = await buscarCotacao(numeroPedido);
 
       if (response.sucesso === true) {
         const deadline = new Date(response.deadlineAt);
@@ -47,11 +45,8 @@ const Index = () => {
         const diffSeconds = Math.max(0, Math.floor((deadline.getTime() - now.getTime()) / 1000));
 
         const prazoFormatado = deadline.toLocaleString("pt-BR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
+          day: "2-digit", month: "2-digit", year: "numeric",
+          hour: "2-digit", minute: "2-digit",
           timeZone: "America/Sao_Paulo",
         });
 
@@ -68,21 +63,19 @@ const Index = () => {
           todosResponderam: false,
           vencedorDefinido: false,
           mensagemStatus: "Aguardando retorno dos fornecedores.",
-          enderecoDestino,
+          enderecoDestino: response.enderecoDestino,
           fornecedores: response.fornecedor
-            ? [
-                {
-                  nome: response.fornecedor,
-                  telefone: response.fornecedor_telefone || "—",
-                  status: "aguardando",
-                  valor: null,
-                  prazo: null,
-                  prazoDias: null,
-                  respondidoEm: null,
-                  vencedor: false,
-                  statusFinal: null,
-                },
-              ]
+            ? [{
+                nome: response.fornecedor,
+                telefone: response.fornecedor_telefone || "—",
+                status: "aguardando",
+                valor: null,
+                prazo: null,
+                prazoDias: null,
+                respondidoEm: null,
+                vencedor: false,
+                statusFinal: null,
+              }]
             : [],
         };
 
