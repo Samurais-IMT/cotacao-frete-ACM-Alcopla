@@ -63,7 +63,7 @@ const Index = () => {
           todosResponderam: false,
           vencedorDefinido: false,
           mensagemStatus: "Aguardando retorno dos fornecedores.",
-          enderecoDestino: response.enderecoDestino,
+          enderecoFormatado: response.enderecoFormatado,
           fornecedores: response.fornecedor
             ? [{
                 nome: response.fornecedor,

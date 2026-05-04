@@ -15,16 +15,6 @@ export interface CampoFaltante {
   campos: string[];
 }
 
-export interface EnderecoDestino {
-  cep: string;
-  logradouro: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-}
-
 export interface CotacaoSucessoResponse {
   sucesso: true;
   mensagem: string;
@@ -38,6 +28,7 @@ export interface CotacaoSucessoResponse {
   itens: ItemCotacao[];
   fornecedor?: string;
   fornecedor_telefone?: string;
+  enderecoFormatado?: string;
 }
 
 export interface CotacaoErroResponse {
@@ -74,7 +65,7 @@ export interface AcompanhamentoResponse {
   todosResponderam: boolean;
   vencedorDefinido: boolean;
   mensagemStatus: string;
-  enderecoDestino?: EnderecoDestino;
+  enderecoFormatado?: string;
   fornecedores: Fornecedor[];
 }
 

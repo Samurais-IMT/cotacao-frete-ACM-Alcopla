@@ -92,17 +92,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
     });
   })();
 
-  const enderecoFormatado = (() => {
-    const e = data.enderecoDestino;
-    if (!e) return null;
-    return [
-      e.logradouro + (e.numero ? `, ${e.numero}` : ""),
-      e.complemento,
-      e.bairro,
-      e.cidade + (e.estado ? `/${e.estado}` : ""),
-      e.cep ? `CEP: ${e.cep}` : "",
-    ].filter(Boolean).join(" — ");
-  })();
+  const enderecoFormatado = data.enderecoFormatado || null;
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
