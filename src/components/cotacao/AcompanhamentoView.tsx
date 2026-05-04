@@ -22,30 +22,6 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   encerrado:  { label: "Encerrado",  variant: "destructive" },
 };
 
-function CountdownDisplay({ segundosRestantes, encerrada }: { segundosRestantes: number | undefined; encerrada: boolean }) {
-  const [secondsLeft, setSecondsLeft] = useState<number>(Math.max(0, segundosRestantes ?? 0));
-
-  useEffect(() => {
-    if (segundosRestantes != null) {
-      setSecondsLeft(Math.max(0, Math.floor(segundosRestantes)));
-    }
-  }, [segundosRestantes]);
-
-  useEffect(() => {
-    if (encerrada || secondsLeft <= 0) return;
-    const interval = setInterval(() => {
-      setSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [encerrada, secondsLeft > 0]);
-
-  if (encerrada || secondsLeft <= 0) return <span className="text-sm font-mono font-semibold text-foreground">Prazo encerrado</span>;
-  const h = Math.floor(secondsLeft / 3600);
-  const m = Math.floor((secondsLeft % 3600) / 60);
-  const s = secondsLeft % 60;
-  return <span className="text-sm font-mono font-semibold text-foreground">{`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`}</span>;
-}
-
 function useCountdown(segundosRestantes: number | undefined, encerrada: boolean) {
   const [secondsLeft, setSecondsLeft] = useState<number>(Math.max(0, segundosRestantes ?? 0));
 
@@ -67,7 +43,7 @@ function useCountdown(segundosRestantes: number | undefined, encerrada: boolean)
   const h = Math.floor(secondsLeft / 3600);
   const m = Math.floor((secondsLeft % 3600) / 60);
   const s = secondsLeft % 60;
-  return \`\${h.toString().padStart(2, "0")}:\${m.toString().padStart(2, "0")}:\${s.toString().padStart(2, "0")}\`;
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
 function parseValor(valor: string | null | undefined): number {
@@ -213,7 +189,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
             <span className="text-xs text-muted-foreground block mb-1">Countdown</span>
             <div className="flex items-center gap-1.5">
               <Clock className="h-4 w-4 text-primary" />
-              <CountdownDisplay segundosRestantes={data.segundosRestantes} encerrada={data.encerrada} />
+              <span className="text-sm font-mono font-semibold text-foreground">{timeLeft}</span>
             </div>
           </div>
           <div className="bg-muted/50 rounded-lg p-3">
@@ -285,14 +261,19 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
                       {podeSelecionar && (
                         <TableCell>
                           {f.status === "respondido" && (
-                            <input
-                              type="radio"
-                              name="vencedor"
-                              value={f.telefone}
-                              checked={telefoneVencedor === f.telefone}
-                              onChange={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
-                              className="cursor-pointer accent-primary"
-                            />
+                            <button
+                              type="button"
+                              onClick={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
+                              className="flex items-center justify-center w-5 h-5 rounded-full border-2 transition-colors"
+                              style={{
+                                borderColor: telefoneVencedor === f.telefone ? '#2563eb' : '#9ca3af',
+                                backgroundColor: telefoneVencedor === f.telefone ? '#2563eb' : 'transparent'
+                              }}
+                            >
+                              {telefoneVencedor === f.telefone && (
+                                <span className="w-2 h-2 rounded-full bg-white block" />
+                              )}
+                            </button>
                           )}
                         </TableCell>
                       )}
@@ -352,14 +333,19 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex items-center gap-2">
                       {podeSelecionar && f.status === "respondido" && (
-                        <input
-                          type="radio"
-                          name="vencedor"
-                          value={f.telefone}
-                          checked={telefoneVencedor === f.telefone}
-                          onChange={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
-                          className="cursor-pointer accent-primary"
-                        />
+                        <button
+                          type="button"
+                          onClick={() => { setTelefoneVencedor(f.telefone); setErroVencedor(""); }}
+                          className="flex items-center justify-center w-5 h-5 rounded-full border-2 transition-colors shrink-0"
+                          style={{
+                            borderColor: telefoneVencedor === f.telefone ? '#2563eb' : '#9ca3af',
+                            backgroundColor: telefoneVencedor === f.telefone ? '#2563eb' : 'transparent'
+                          }}
+                        >
+                          {telefoneVencedor === f.telefone && (
+                            <span className="w-2 h-2 rounded-full bg-white block" />
+                          )}
+                        </button>
                       )}
                       <span className="font-medium text-foreground text-sm">{f.nome}</span>
                     </div>
