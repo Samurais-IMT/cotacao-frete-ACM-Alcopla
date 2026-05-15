@@ -8,6 +8,7 @@ import {
   ArrowLeft, Clock, CheckCircle2, AlertTriangle, Users,
   RefreshCw, Copy, Check, MapPin, Trophy, Loader2
 } from "lucide-react";
+import FreteEstimadoTable from "@/components/cotacao/FreteEstimadoTable";
 
 interface AcompanhamentoViewProps {
   data: AcompanhamentoResponse;
@@ -51,6 +52,23 @@ function parseValor(valor: string | null | undefined): number {
   return parseFloat(valor.replace(/\./g, "").replace(",", ".")) || Infinity;
 }
 
+function formatEndereco(data: AcompanhamentoResponse): string | null {
+  if (data.enderecoDestino) {
+    const e = data.enderecoDestino;
+    const parts = [
+      e.logradouro,
+      e.numero ? `, ${e.numero}` : "",
+      e.complemento ? ` - ${e.complemento}` : "",
+      e.bairro ? `, ${e.bairro}` : "",
+      e.cidade ? `, ${e.cidade}` : "",
+      e.estado ? `/${e.estado}` : "",
+      e.cep ? ` — CEP: ${e.cep.replace(/(\d{5})(\d{3})/, "$1-$2")}` : "",
+    ];
+    return parts.join("");
+  }
+  return data.enderecoFormatado || null;
+}
+
 const POLLING_INTERVAL = 10_000;
 
 const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: AcompanhamentoViewProps) => {
@@ -92,7 +110,7 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
     });
   })();
 
-  const enderecoFormatado = data.enderecoFormatado || null;
+  const enderecoFormatado = formatEndereco(data);
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -215,6 +233,11 @@ const AcompanhamentoView = ({ data, onBack, onDataUpdate, dadosPedido }: Acompan
           </div>
         )}
       </div>
+
+      {/* Tabela de frete estimado — acima dos fornecedores */}
+      {data.freteEstimado && (
+        <FreteEstimadoTable freteEstimado={data.freteEstimado} />
+      )}
 
       {/* Tabela de fornecedores — sempre a mesma, valores aparecem conforme respondem */}
       <div className="space-y-3">
