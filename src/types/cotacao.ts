@@ -15,6 +15,34 @@ export interface CampoFaltante {
   campos: string[];
 }
 
+export interface EnderecoDestino {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+}
+
+export interface FreteEstimadoVeiculo {
+  tipoVeiculo: string;
+  pesoMax: number;
+  eixos: number;
+  valorKm: number;
+  valorEstimado: number;
+  valorEstimadoFormatado: string;
+}
+
+export interface FreteEstimado {
+  status: string;
+  origemCep: string;
+  origemCidade: string;
+  distanciaKm: number;
+  duracaoEstimada: string;
+  tabela: FreteEstimadoVeiculo[];
+}
+
 export interface CotacaoSucessoResponse {
   sucesso: true;
   mensagem: string;
@@ -66,6 +94,8 @@ export interface AcompanhamentoResponse {
   vencedorDefinido: boolean;
   mensagemStatus: string;
   enderecoFormatado?: string;
+  enderecoDestino?: EnderecoDestino;
+  freteEstimado?: FreteEstimado;
   fornecedores: Fornecedor[];
 }
 
