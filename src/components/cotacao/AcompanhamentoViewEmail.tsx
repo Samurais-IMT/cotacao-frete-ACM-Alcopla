@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  ArrowLeft, MapPin, Truck, RefreshCw, Copy, Check,
+  ArrowLeft, MapPin, Truck, RefreshCw,
   Trophy, Loader2, AlertCircle, Route as RouteIcon
 } from "lucide-react";
 
@@ -19,7 +19,6 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState<string | null>(null);
   const [confirmando, setConfirmando] = useState(false);
@@ -47,15 +46,6 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
   useEffect(() => {
     carregar();
   }, [carregar]);
-
-  const handleCopy = async () => {
-    if (!data?.cotacaoId) return;
-    try {
-      await navigator.clipboard.writeText(data.cotacaoId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch { /* ignore */ }
-  };
 
   const handleConfirmarVencedor = async () => {
     if (!fornecedorSelecionado) return;
@@ -125,16 +115,8 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
         </Button>
         <div className="flex-1">
           <h2 className="text-xl font-semibold text-foreground">Acompanhamento da cotação</h2>
-          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+          <p className="text-sm text-muted-foreground">
             Pedido #{data.numeroPedido}
-            {data.cotacaoId && (
-              <>
-                {" "}— {data.cotacaoId}
-                <button onClick={handleCopy} className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-muted transition-colors" title="Copiar ID">
-                  {copied ? <Check className="h-3.5 w-3.5 text-accent" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-                </button>
-              </>
-            )}
           </p>
         </div>
         <Button variant="ghost" size="icon" onClick={() => carregar(true)} disabled={isRefreshing} className="shrink-0">
