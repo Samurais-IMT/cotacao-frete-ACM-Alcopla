@@ -24,6 +24,31 @@ export interface FornecedorEmail {
   statusFinal: "vencedor" | "perdedor" | null;
 }
 
+export interface Transportadora {
+  cod_transportadora: number;
+  nome_fantasia: string;
+  email: string;
+}
+
+export interface BuscarPedidoEmailSucesso {
+  sucesso: true;
+  numeroPedido: string;
+  enderecoFormatado: string;
+  pesoTotal: number;
+  totalVolumes: number;
+  veiculoRecomendado: string;
+  itens: ItemCotacao[];
+  transportadoras: Transportadora[];
+}
+
+export interface BuscarPedidoEmailErro {
+  sucesso: false;
+  mensagem: string;
+  faltantes?: CampoFaltante[];
+}
+
+export type BuscarPedidoEmailResponse = BuscarPedidoEmailSucesso | BuscarPedidoEmailErro;
+
 export interface EnviarCotacaoEmailSucesso {
   sucesso: true;
   mensagem: string;

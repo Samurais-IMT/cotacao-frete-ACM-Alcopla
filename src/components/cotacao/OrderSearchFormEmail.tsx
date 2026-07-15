@@ -1,31 +1,65 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Search, Loader2 } from "lucide-react";
+import { Mail, Search, Loader2, Package } from "lucide-react";
 import logoACM from "@/assets/LOGO_ACM.png";
+import { Transportadora } from "@/types/cotacaoEmail";
 
 interface OrderSearchFormEmailProps {
-  onEnviarCotacao: (numeroPedido: string) => void;
+  onBuscarPedido: (numeroPedido: string) => void;
+  onEnviarCotacao: (numeroPedido: string, transportadoras: number[]) => void;
   onConsultarCotacao: (numeroPedido: string) => void;
   isLoading: boolean;
-  loadingType: "enviar" | "consultar" | null;
+  loadingType: "buscar" | "enviar" | "consultar" | null;
+  pedidoEncontrado?: {
+    numeroPedido: string;
+    enderecoFormatado: string;
+    pesoTotal: number;
+    totalVolumes: number;
+    veiculoRecomendado: string;
+    transportadoras: Transportadora[];
+  } | null;
 }
 
 const OrderSearchFormEmail = ({
+  onBuscarPedido,
   onEnviarCotacao,
   onConsultarCotacao,
   isLoading,
   loadingType,
+  pedidoEncontrado,
 }: OrderSearchFormEmailProps) => {
   const [numeroPedido, setNumeroPedido] = useState("");
+  const [selecionadas, setSelecionadas] = useState<number[]>([]);
 
-  const handleEnviar = (e: React.FormEvent) => {
+  const handleBuscar = (e: React.FormEvent) => {
     e.preventDefault();
-    if (numeroPedido.trim()) onEnviarCotacao(numeroPedido.trim());
+    if (numeroPedido.trim()) {
+      setSelecionadas([]);
+      onBuscarPedido(numeroPedido.trim());
+    }
   };
 
   const handleConsultar = () => {
     if (numeroPedido.trim()) onConsultarCotacao(numeroPedido.trim());
+  };
+
+  const handleEnviar = () => {
+    if (pedidoEncontrado && selecionadas.length > 0) {
+      onEnviarCotacao(pedidoEncontrado.numeroPedido, selecionadas);
+    }
+  };
+
+  const toggleTransportadora = (cod: number) => {
+    setSelecionadas(prev =>
+      prev.includes(cod) ? prev.filter(c => c !== cod) : [...prev, cod]
+    );
+  };
+
+  const toggleTodas = () => {
+    if (!pedidoEncontrado) return;
+    const todos = pedidoEncontrado.transportadoras.map(t => t.cod_transportadora);
+    setSelecionadas(prev => prev.length === todos.length ? [] : todos);
   };
 
   return (
@@ -34,12 +68,12 @@ const OrderSearchFormEmail = ({
         <img src={logoACM} alt="Alcopla" className="h-20 object-contain" />
         <h1 className="text-2xl font-semibold text-foreground">Cotação de Frete por Email</h1>
         <p className="text-muted-foreground text-sm">
-          Envie a cotação por email aos fornecedores ou consulte um pedido já enviado.
+          Busque o pedido, selecione as transportadoras e envie a cotação por email.
         </p>
       </div>
 
       <div className="bg-card border border-border rounded-lg p-5 space-y-4">
-        <form onSubmit={handleEnviar} className="space-y-4">
+        <form onSubmit={handleBuscar} className="space-y-4">
           <div>
             <label htmlFor="numeroPedido" className="text-sm font-medium text-foreground mb-1.5 block">
               Número do pedido
@@ -61,10 +95,10 @@ const OrderSearchFormEmail = ({
               className="w-full h-11"
               disabled={isLoading || !numeroPedido.trim()}
             >
-              {isLoading && loadingType === "enviar" ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enviando...</>
+              {isLoading && loadingType === "buscar" ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Buscando...</>
               ) : (
-                <><Mail className="mr-2 h-4 w-4" />Enviar cotação por email</>
+                <><Package className="mr-2 h-4 w-4" />Buscar pedido</>
               )}
             </Button>
 
@@ -83,6 +117,62 @@ const OrderSearchFormEmail = ({
             </Button>
           </div>
         </form>
+
+        {pedidoEncontrado && (
+          <div className="space-y-4 pt-2 border-t border-border">
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p className="font-medium text-foreground">Pedido #{pedidoEncontrado.numeroPedido}</p>
+              <p>{pedidoEncontrado.enderecoFormatado}</p>
+              <p>Peso total: <strong>{pedidoEncontrado.pesoTotal} kg</strong> · Volumes: <strong>{pedidoEncontrado.totalVolumes}</strong> · Veículo: <strong>{pedidoEncontrado.veiculoRecomendado}</strong></p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-foreground">Transportadoras</p>
+                <button
+                  type="button"
+                  onClick={toggleTodas}
+                  className="text-xs text-primary hover:underline"
+                >
+                  {selecionadas.length === pedidoEncontrado.transportadoras.length ? "Desmarcar todas" : "Selecionar todas"}
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {pedidoEncontrado.transportadoras.map(t => (
+                  <label
+                    key={t.cod_transportadora}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selecionadas.includes(t.cod_transportadora)}
+                      onChange={() => toggleTransportadora(t.cod_transportadora)}
+                      className="w-4 h-4 accent-primary"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{t.nome_fantasia}</p>
+                      <p className="text-xs text-muted-foreground truncate">{t.email}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              className="w-full h-11"
+              onClick={handleEnviar}
+              disabled={isLoading || selecionadas.length === 0}
+            >
+              {isLoading && loadingType === "enviar" ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enviando...</>
+              ) : (
+                <><Mail className="mr-2 h-4 w-4" />Enviar cotação por email ({selecionadas.length})</>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
