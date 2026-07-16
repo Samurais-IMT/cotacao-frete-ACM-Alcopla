@@ -39,6 +39,7 @@ export interface BuscarPedidoEmailSucesso {
   veiculoRecomendado: string;
   itens: ItemCotacao[];
   transportadoras: Transportadora[];
+  cotacaoExistente: boolean;
 }
 
 export interface BuscarPedidoEmailErro {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Search, Loader2, Package } from "lucide-react";
+import { Mail, Search, Loader2, Package, AlertTriangle } from "lucide-react";
 import logoACM from "@/assets/LOGO_ACM.png";
 import { Transportadora } from "@/types/cotacaoEmail";
 
@@ -18,6 +18,7 @@ interface OrderSearchFormEmailProps {
     totalVolumes: number;
     veiculoRecomendado: string;
     transportadoras: Transportadora[];
+    cotacaoExistente: boolean;
   } | null;
 }
 
@@ -120,6 +121,16 @@ const OrderSearchFormEmail = ({
 
         {pedidoEncontrado && (
           <div className="space-y-4 pt-2 border-t border-border">
+
+            {pedidoEncontrado.cotacaoExistente && (
+              <div className="flex items-start gap-2 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+                <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                  Já existe uma cotação enviada para este pedido. Deseja reenviar?
+                </p>
+              </div>
+            )}
+
             <div className="text-sm text-muted-foreground space-y-1">
               <p className="font-medium text-foreground">Pedido #{pedidoEncontrado.numeroPedido}</p>
               <p>{pedidoEncontrado.enderecoFormatado}</p>
