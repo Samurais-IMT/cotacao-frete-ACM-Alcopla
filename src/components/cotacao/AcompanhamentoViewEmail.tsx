@@ -427,7 +427,7 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
                 <TableRow className="bg-muted/50">
                   <TableHead>Código</TableHead>
                   <TableHead>Descrição</TableHead>
-                  <TableHead className="text-right">Qtd</TableHead>
+                  <TableHead className="text-right">Volumes</TableHead>
                   <TableHead className="text-right">Peso Bruto (kg)</TableHead>
                 </TableRow>
               </TableHeader>
@@ -436,7 +436,7 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
                   <TableRow key={item.cod_produto}>
                     <TableCell className="font-mono text-sm">{item.cod_produto}</TableCell>
                     <TableCell>{item.descricao}</TableCell>
-                    <TableCell className="text-right">{item.quantidade}</TableCell>
+                    <TableCell className="text-right">{item.volumeItem ?? item.quantidade}</TableCell>
                     <TableCell className="text-right font-mono">{item.pesoTotalItem.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
@@ -451,7 +451,7 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
                   <span className="text-xs font-medium text-foreground">{item.pesoTotalItem.toFixed(2)} kg</span>
                 </div>
                 <p className="text-sm font-medium text-foreground">{item.descricao}</p>
-                <span className="text-xs text-muted-foreground">Qtd: {item.quantidade}</span>
+                <span className="text-xs text-muted-foreground">Volumes: {item.volumeItem ?? item.quantidade}</span>
               </div>
             ))}
           </div>

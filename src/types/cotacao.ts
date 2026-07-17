@@ -4,9 +4,7 @@ export interface ItemCotacao {
   quantidade: number;
   pesoUnitario: number;
   pesoTotalItem: number;
-  altura: number;
-  largura: number;
-  comprimento: number;
+  volumeItem?: number;
 }
 
 export interface CampoFaltante {
