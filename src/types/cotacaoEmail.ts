@@ -22,6 +22,9 @@ export interface FornecedorEmail {
   email: string;
   vencedor: boolean;
   statusFinal: "vencedor" | "perdedor" | null;
+  valorCotado?: number | null;
+  diasCotado?: number | null;
+  prazoEntrega?: string | null;
 }
 
 export interface Transportadora {
@@ -87,6 +90,11 @@ export interface AcompanhamentoEmailResponse {
 }
 
 export interface SelecionarVencedorEmailResponse {
+  sucesso: boolean;
+  mensagem: string;
+}
+
+export interface SalvarPropostaResponse {
   sucesso: boolean;
   mensagem: string;
 }

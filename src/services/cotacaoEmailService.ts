@@ -3,12 +3,14 @@ import {
   EnviarCotacaoEmailResponse,
   AcompanhamentoEmailResponse,
   SelecionarVencedorEmailResponse,
+  SalvarPropostaResponse,
 } from "@/types/cotacaoEmail";
 
 const BUSCAR_PEDIDO_ENDPOINT = "https://n8n.unoerp.com.br/webhook/buscar-pedido-email";
 const ENVIAR_ENDPOINT = "https://n8n.unoerp.com.br/webhook/cotacao_email";
 const CONSULTAR_ENDPOINT = "https://n8n.unoerp.com.br/webhook/consultar-cotacao-email";
 const SELECIONAR_VENCEDOR_ENDPOINT = "https://n8n.unoerp.com.br/webhook/selecionar-vencedor-email";
+const SALVAR_PROPOSTA_ENDPOINT = "https://n8n.unoerp.com.br/webhook/salvar-proposta-email";
 
 export async function buscarPedidoEmail(
   numeroPedido: string
@@ -55,6 +57,22 @@ export async function selecionarVencedorEmail(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ numeroPedido, fornecedorEmail }),
+  });
+  if (!response.ok) throw new Error(`Erro na requisição: ${response.status}`);
+  return response.json();
+}
+
+export async function salvarProposta(
+  numeroPedido: string,
+  fornecedorEmail: string,
+  valorCotado: number,
+  diasCotado: number,
+  prazoEntrega: string
+): Promise<SalvarPropostaResponse> {
+  const response = await fetch(SALVAR_PROPOSTA_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ numeroPedido, fornecedorEmail, valorCotado, diasCotado, prazoEntrega }),
   });
   if (!response.ok) throw new Error(`Erro na requisição: ${response.status}`);
   return response.json();
