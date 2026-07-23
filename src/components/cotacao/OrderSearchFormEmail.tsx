@@ -134,7 +134,7 @@ const OrderSearchFormEmail = ({
             <div className="text-sm text-muted-foreground space-y-1">
               <p className="font-medium text-foreground">Pedido #{pedidoEncontrado.numeroPedido}</p>
               <p>{pedidoEncontrado.enderecoFormatado}</p>
-              <p>Peso total: <strong>{pedidoEncontrado.pesoTotal} kg</strong> · Volumes: <strong>{pedidoEncontrado.totalVolumes}</strong> · Veículo: <strong>{pedidoEncontrado.veiculoRecomendado}</strong></p>
+              <p>Peso total: <strong>{pedidoEncontrado.pesoTotal?.toFixed(2).replace('.', ',')} kg</strong> · Volumes: <strong>{pedidoEncontrado.totalVolumes}</strong> · Veículo: <strong>{pedidoEncontrado.veiculoRecomendado}</strong></p>
             </div>
 
             <div className="space-y-2">
