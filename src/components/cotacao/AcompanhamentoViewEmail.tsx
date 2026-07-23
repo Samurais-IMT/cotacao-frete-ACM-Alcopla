@@ -226,7 +226,7 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
                     <TableCell className="font-medium">{item.tipoVeiculo}</TableCell>
                     <TableCell className="text-right">{item.pesoMax.toLocaleString('pt-BR')}</TableCell>
                     <TableCell className="text-right">{item.eixos}</TableCell>
-                    <TableCell className="text-right font-mono">R$ {item.valorKm.toFixed(2)}</TableCell>
+                    <TableCell className="text-right font-mono">{item.valorKm.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                     <TableCell className="text-right font-mono font-semibold">{item.valorEstimadoFormatado}</TableCell>
                   </TableRow>
                 ))}
@@ -243,7 +243,7 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
                 <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                   <span>Peso máx: {item.pesoMax.toLocaleString('pt-BR')} kg</span>
                   <span>Eixos: {item.eixos}</span>
-                  <span>R$ {item.valorKm.toFixed(2)}/km</span>
+                  <span>{item.valorKm.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/km</span>
                 </div>
               </div>
             ))}
