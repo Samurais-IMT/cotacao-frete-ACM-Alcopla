@@ -419,7 +419,7 @@ const AcompanhamentoViewEmail = ({ numeroPedido, onBack }: AcompanhamentoViewEma
       {data.itens && data.itens.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-foreground">
-            Produtos do pedido ({data.itens.length}) — Peso total: {data.pesoTotal}kg — Volumes: {data.totalVolumes}
+            Produtos do pedido ({data.itens.length}) — Peso total: {data.pesoTotal?.toFixed(2).replace('.', ',')}kg — Volumes: {data.totalVolumes}
           </h3>
           <div className="hidden md:block border border-border rounded-lg overflow-hidden">
             <Table>
